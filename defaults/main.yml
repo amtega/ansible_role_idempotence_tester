@@ -1,0 +1,15 @@
+---
+# Role default lower priority variables
+
+# Tag to select tasks to run during idempotence test
+
+idempotence_tester_tag: idempotence
+
+# Inventory file to use for idempotence test
+
+idempotence_tester_inventory:
+
+# After running the test limit the play recap output analysis only to the
+# specified hosts.
+
+idempotence_tester_group: all

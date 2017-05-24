@@ -1,0 +1,43 @@
+---
+# Tasks for tesing role
+
+
+- name: setup docker testing environment
+  hosts: localhost
+  roles:
+    - role: docker_role_tester
+      docker_role_tester_containers_group: idempotence_tester_test_containers
+
+- name: launch idempotence test
+  hosts: localhost
+  roles:
+    - role: idempotence_tester
+      idempotence_tester_inventory: >-
+        {{ docker_role_tester_inventory }}
+      idempotence_tester_group: idempotence_tester_test_containers
+
+- name: refresh docker testing environment
+  hosts: localhost
+  roles:
+    - role: docker_role_tester
+      docker_role_tester_images: []
+      docker_role_tester_containers_restart: true
+      # docker_role_tester_containers_state: started
+
+- name: idempotence_tester tests
+  hosts: idempotence_tester_test_containers
+  tasks:
+    - name: create an empty file
+      copy:
+        src: /etc/issue
+        dest: /tmp/
+        force: no
+  tags:
+    - idempotence
+
+- name: cleanup docker testing environment
+  hosts: localhost
+  roles:
+    - role: docker_role_tester
+      docker_role_tester_images: []
+      docker_role_tester_containers_state: absent

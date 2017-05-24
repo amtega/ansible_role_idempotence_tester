@@ -1,0 +1,18 @@
+---
+# Role tasks
+
+- block:
+
+  - name: run idempotence test
+    idempotence_test:
+      tag: "{{ idempotence_tester_tag }}"
+      inventory: "{{ idempotence_tester_inventory }}"
+      hosts: "{{ groups[idempotence_tester_group] }}"
+    register: idempotence_tester_test_result
+    tags:
+      - role::idempotence_tester
+      - role::idempotence_tester::test
+
+  rescue:
+
+  - debug: var=idempotence_tester_test_result
