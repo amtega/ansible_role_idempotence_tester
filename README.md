@@ -1,38 +1,62 @@
-Role Name
-=========
+# idempotence_tester
 
-A brief description of the role goes here.
+This is an [Ansible](http://www.ansible.com) role to run idempotence tests.
 
-Requirements
-------------
+The role will call two times ansible-playbook with the same parameters as the running playbook, but limiting the scope to tasks tagged with a specfied tag.
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Also, it's possible to specify and alternative inventory file and the group of hosts to consider during test output analysis.
 
-Role Variables
---------------
+The idempotence will fail if any of the following conditions is true:
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+- The first run ends without changes.
+- The second run ends with changes.
+- Any of the runs ends with failed tasks.
+- Any of the runs ends with unreachable hosts.
 
-Dependencies
-------------
+## Requirements
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+- Ansible >= 2.0
 
-Example Playbook
-----------------
+## Role Variables
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+A list of all the default variables for this role is available in `defaults/main.yml`.
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+## Dependencies
 
-License
--------
+This role depends on 'docker_provisioner' role.
 
-BSD
+## Example Playbook
 
-Author Information
-------------------
+This is an example playbook:
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+```yaml
+---
+- name: launch idempotence test
+  hosts: localhost
+  roles:
+    - role: idempotence_tester
+
+- name: idempotence test
+  host: localhost
+  tasks:
+    - debug: msg="Nothing done, so idempotence test should fail"
+  tags:
+    - idempotence
+```
+
+## Testing
+
+You can run the tests with the following commands:
+
+```shell
+$ cd idempotence_tester/test
+$ ansible-playbook main.yml
+```
+
+## License
+
+Not defined.
+
+## Author Information
+
+- Juan Antonio Valiño García ([juanval@edu.xunta.es](mailto:juanval@edu.xunta.es)). Amtega - Xunta de Galicia

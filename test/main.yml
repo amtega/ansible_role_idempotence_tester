@@ -1,30 +1,97 @@
 ---
 # Tasks for tesing role
 
+- name: load docker presets and configure docker testing environment
+  hosts: localhost
+  roles:
+    - docker_presets
+  tasks:
+    - set_fact:
+        docker_sandbox_images: "{{ docker_presets_images }}"
+        docker_sandbox_containers: >-
+          {{ docker_presets_containers | docker_presets_randomize_names }}
+        docker_sandbox_containers_group: idempotence_tester_test_containers
 
 - name: setup docker testing environment
   hosts: localhost
   roles:
-    - role: docker_role_tester
-      docker_role_tester_containers_group: idempotence_tester_test_containers
+    - role: docker_sandbox
 
-- name: launch idempotence test
+- name: launch idempotence test with correct expected result
+  hosts: localhost
+  tasks:
+    - include_role:
+        name: idempotence_tester
+      vars:
+        idempotence_tester_inventory: "{{ docker_sandbox_inventory }}"
+        idempotence_tester_group: idempotence_tester_test_containers
+        idempotence_tester_tag: correct-idempotence-test
+
+- name: refresh docker testing environment and check results from previous test
   hosts: localhost
   roles:
-    - role: idempotence_tester
-      idempotence_tester_inventory: >-
-        {{ docker_role_tester_inventory }}
-      idempotence_tester_group: idempotence_tester_test_containers
+    - role: docker_sandbox
+      docker_sandbox_images: []
+      docker_sandbox_containers_restart: true
+  tasks:
+    - name: assert that idempotence test was ok
+      assert:
+        that: not idempotence_tester_test_result | failed
 
-- name: refresh docker testing environment
+- name: launch idempotence test with no changes expected result
+  hosts: localhost
+  tasks:
+    - include_role:
+        name: idempotence_tester
+      vars:
+        idempotence_tester_inventory: "{{ docker_sandbox_inventory }}"
+        idempotence_tester_group: idempotence_tester_test_containers
+        idempotence_tester_tag: no-changes-idempotence-test
+      ignore_errors: true
+
+- name: refresh docker testing environment and check results from previous test
   hosts: localhost
   roles:
-    - role: docker_role_tester
-      docker_role_tester_images: []
-      docker_role_tester_containers_restart: true
-      # docker_role_tester_containers_state: started
+    - role: docker_sandbox
+      docker_sandbox_images: []
+      docker_sandbox_containers_restart: true
+  tasks:
+    - name: assert that idempotence test failed
+      assert:
+        that:
+          - idempotence_tester_test_result | failed
+          - idempotence_tester_test_result.msg | search('unchanged')
 
-- name: idempotence_tester tests
+- name: launch idempotence test with failed expected result
+  hosts: localhost
+  tasks:
+    - include_role:
+        name: idempotence_tester
+      vars:
+        idempotence_tester_inventory: "{{ docker_sandbox_inventory }}"
+        idempotence_tester_group: idempotence_tester_test_containers
+        idempotence_tester_tag: failed-idempotence-test
+      ignore_errors: true
+
+- name: cleanup docker testing environment and check results from previous test
+  hosts: localhost
+  roles:
+    - role: docker_sandbox
+      docker_sandbox_images: []
+      docker_sandbox_containers_state: absent
+  tasks:
+    - name: assert that idempotence test failed
+      assert:
+        that:
+          - idempotence_tester_test_result | failed
+          - idempotence_tester_test_result.msg | search('failed')
+
+- name: refresh inventory to avoid running tasks destinated to idempotence tests
+  hosts: localhost
+  tasks:
+    - meta: refresh_inventory
+
+- name: idempotence test with correct expected result
   hosts: idempotence_tester_test_containers
   tasks:
     - name: create an empty file
@@ -33,11 +100,22 @@
         dest: /tmp/
         force: no
   tags:
-    - idempotence
+    - correct-idempotence-test
 
-- name: cleanup docker testing environment
-  hosts: localhost
-  roles:
-    - role: docker_role_tester
-      docker_role_tester_images: []
-      docker_role_tester_containers_state: absent
+- name: idempotence test with no changes expected result
+  hosts: idempotence_tester_test_containers
+  tasks:
+    - debug: msg="Hello World"
+  tags:
+    - no-changes-idempotence-test
+
+- name: idempotence test with failed expected result
+  hosts: idempotence_tester_test_containers
+  tasks:
+    - name: create an empty file
+      copy:
+        src: /missingdir/missingfile
+        dest: /tmp/
+        force: no
+  tags:
+    - failed-idempotence-test

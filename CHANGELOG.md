@@ -1,11 +1,5 @@
 # Change Log
 
-## YYYY-MM-DD
+## 2017-05-26
 
 - Initial release
-
-## YYYY-MM-DD
-
-- Change 1
-- Change 2
-- Change N

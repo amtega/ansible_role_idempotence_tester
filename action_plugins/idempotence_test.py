@@ -5,12 +5,6 @@ __metaclass__ = type
 import argparse, re, sys
 from ansible.plugins.action import ActionBase
 
-try:
-    from __main__ import display
-except ImportError:
-    from ansible.utils.display import Display
-    display = Display()
-
 class ActionModule(ActionBase):
 
     TRANSFERS_FILES = False
@@ -116,7 +110,6 @@ class ActionModule(ActionBase):
             run (int): run number.
             result (dict): result of the run to parse.
             hosts (list): hosts to consider during result parse.
-                If not give will consider all hosts.
 
         Returns:
             tuple: (failed, changed, msg)
@@ -148,7 +141,7 @@ class ActionModule(ActionBase):
         unreachable_count = 0
         changed_count = 0
         not_changed_count = 0
-        failed_count = 2
+
         for line in play_recap:
             match = play_recap_line.match(line)
             if match and match.group(1).strip() in hosts:
@@ -165,16 +158,6 @@ class ActionModule(ActionBase):
 
         output = (False, True, "")
 
-        if failed_count > 0:
-            output = (True,
-                      (changed_count > 1),
-                      "Run " + str(run) + " finished with failed hosts")
-
-        if unreachable_count > 0:
-            output = (True,
-                      (changed_count > 1),
-                      "Run " + str(run) + " finished with unreachable hosts")
-
         if run == 1 and not_changed_count > 0:
             output = (True,
                       False,
@@ -184,6 +167,16 @@ class ActionModule(ActionBase):
             output = (True,
                       True,
                       "Run " + str(run) + " finished with changed hosts")
+
+        if unreachable_count > 0:
+            output = (True,
+                      (changed_count > 1),
+                      "Run " + str(run) + " finished with unreachable hosts")
+
+        if failed_count > 0:
+            output = (True,
+                    (changed_count > 1),
+                    "Run " + str(run) + " finished with failed hosts")
 
         return output
 
