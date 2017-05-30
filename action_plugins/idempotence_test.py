@@ -97,9 +97,14 @@ class ActionModule(ActionBase):
                         task_vars=task_vars,
                         tmp=tmp)
 
-        result.pop("changed")
-        result.pop("invocation")
-        result.pop("warnings")
+        if "changed" in result:
+            result.pop("changed")
+
+        if "invocation" in result:
+            result.pop("invocation")
+
+        if "warning" in result:
+            result.pop("warnings")
 
         return result
 
