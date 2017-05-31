@@ -7,7 +7,7 @@
     idempotence_test:
       tag: "{{ idempotence_tester_tag }}"
       inventory: "{{ idempotence_tester_inventory }}"
-      hosts: "{{ groups[idempotence_tester_group] }}"
+      group: "{{ idempotence_tester_group }}"
     register: idempotence_tester_test_result
     tags:
       - role::idempotence_tester

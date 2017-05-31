@@ -8,3 +8,7 @@
 
 - Fixed some bugs
 - Refactored tests
+
+## 2017-05-30
+
+- Limited scope of the test with group and --limit arg

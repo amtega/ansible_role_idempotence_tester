@@ -9,12 +9,13 @@ class ActionModule(ActionBase):
 
     TRANSFERS_FILES = False
 
-    def get_command_line(self, inventory, tag="test-idempotence"):
+    def get_command_line(self, inventory, group, tag="test-idempotence"):
         """Return command line to run idempotence tests.
 
         Args:
             inventory (str): inventory to use.
-            tags (str): tag to select the tests to run.
+            group (str): group that contains the hosts to test.
+            tag (str): tag to select the tests to run.
 
         Returns:
             str: full command line to run the tests.
@@ -25,6 +26,7 @@ class ActionModule(ActionBase):
         parser.add_argument("--skip-tags")
         parser.add_argument("-t", "--tags")
         parser.add_argument("-i", "--inventory-file")
+        parser.add_argument("-l", "--limit")
         parser.add_argument("command", nargs=1)
         parser.add_argument("playbook", nargs=1)
 
@@ -60,11 +62,14 @@ class ActionModule(ActionBase):
         else:
             inventory_args = ""
 
+        limit_args = '--limit="' + group +'"'
+
         components = [ command,
                        tags,
                        skip_tags,
                        extra_args,
                        inventory_args,
+                       limit_args,
                        playbook ]
 
         # Build the full command line
@@ -78,13 +83,14 @@ class ActionModule(ActionBase):
 
         return full_command_line
 
-    def execute_test(self, task_vars, tmp, inventory, tag):
+    def execute_test(self, task_vars, tmp, inventory, group, tag):
         """Execute the test.
 
         Args:
             task_vars (dict): variables associated with this task.
             tmp (str): temporary directory.
             inventory (str): inventory file to use in the tests.
+            group (str): group that contains the hosts to test.
             tag (str): the tag to select the tests to run.
 
         Returns:
@@ -93,7 +99,9 @@ class ActionModule(ActionBase):
         result = self._execute_module(
                     module_name='command',
                     module_args=dict(
-                        _raw_params=self.get_command_line(inventory, tag)),
+                        _raw_params=self.get_command_line(inventory,
+                                                          group,
+                                                          tag)),
                         task_vars=task_vars,
                         tmp=tmp)
 
@@ -108,13 +116,12 @@ class ActionModule(ActionBase):
 
         return result
 
-    def parse_result(self, run, result, hosts):
+    def parse_result(self, run, result):
         """Parse run result.
 
         Args:
             run (int): run number.
             result (dict): result of the run to parse.
-            hosts (list): hosts to consider during result parse.
 
         Returns:
             tuple: (failed, changed, msg)
@@ -149,7 +156,7 @@ class ActionModule(ActionBase):
 
         for line in play_recap:
             match = play_recap_line.match(line)
-            if match and match.group(1).strip() in hosts:
+            if match:
                 if not failed_zero_line.match(line):
                     failed_count += 1
                 if not unreachable_zero_line.match(line):
@@ -195,25 +202,29 @@ class ActionModule(ActionBase):
 
         inventory = self._task.args.get("inventory")
         tag = self._task.args.get("tag")
-        hosts = self._task.args.get("hosts")
+        group = self._task.args.get("group")
 
         runs = list()
         result['changed'] = True
 
         # Launch first run
 
-        run_result = self.execute_test(task_vars, tmp, inventory, tag)
+        run_result = self.execute_test(task_vars, tmp, inventory, group, tag)
         runs.append(run_result)
         result['failed'], result['changed'], result['msg'] = \
-            self.parse_result(1, run_result, hosts)
+            self.parse_result(1, run_result)
 
         # Launch second run
 
         if not result['failed']:
-            run_result = self.execute_test(task_vars, tmp, inventory, tag)
+            run_result = self.execute_test(task_vars,
+                                           tmp,
+                                           inventory,
+                                           group,
+                                           tag)
             runs.append(run_result)
             result['failed'], result['changed'], result['msg'] = \
-                self.parse_result(2, run_result, hosts)
+                self.parse_result(2, run_result)
             result['runs'] = runs
 
         if not result['failed'] or self._play_context.verbosity > 0:

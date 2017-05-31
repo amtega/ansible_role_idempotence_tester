@@ -2,7 +2,7 @@
 
 This is an [Ansible](http://www.ansible.com) role to run idempotence tests.
 
-The role will call two times ansible-playbook with the same parameters as the running playbook, but limiting the scope to tasks tagged with a specfied tag.
+The role will call two times ansible-playbook with the same parameters as the running playbook, but limiting the scope to tagged tasks and to a specific group of hosts.
 
 Also, it's possible to specify and alternative inventory file and the group of hosts to consider during test output analysis.
 
