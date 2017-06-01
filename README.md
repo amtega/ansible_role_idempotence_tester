@@ -21,6 +21,10 @@ The idempotence will fail if any of the following conditions is true:
 
 A list of all the default variables for this role is available in `defaults/main.yml`.
 
+Also, the role setup the following variables during execution:
+
+- idempotence_tester_test_result: contains the result of the idempotence tests.
+
 ## Dependencies
 
 This role depends on 'docker_provisioner' role.
