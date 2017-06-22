@@ -28,16 +28,19 @@ class ActionModule(ActionBase):
         parser.add_argument("-i", "--inventory-file")
         parser.add_argument("-l", "--limit")
         parser.add_argument("command", nargs=1)
-        parser.add_argument("playbook", nargs=1)
 
         # Parse argv and extract specific arguments
 
         known_args, unknown_args = parser.parse_known_args(sys.argv)
         command = known_args.command[0]
-        playbook = known_args.playbook[0]
         tags = known_args.tags
         skip_tags = known_args.skip_tags
         extra_args = unknown_args[1:-2]
+
+        for arg in unknown_args:
+            if re.search('.*\.yml', arg):
+                playbook = arg
+                break
 
         # Build strings that will compose the final command line, adjusting
         # --tags and --skip-tags

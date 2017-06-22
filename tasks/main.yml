@@ -4,7 +4,7 @@
 - block:
 
   - name: run idempotence test
-    idempotence_test:
+    idempotence_tester_run:
       tag: "{{ idempotence_tester_tag }}"
       inventory: "{{ idempotence_tester_inventory }}"
       group: "{{ idempotence_tester_group }}"
