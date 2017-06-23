@@ -11,7 +11,7 @@
   tasks:
     - name: assert that idempotence test was ok
       assert:
-        that: not docker_sandbox_test_result | failed
+        that: not docker_sandbox_idempotence_result | failed
 
 - name: run idempotence test with no changes expected result
   hosts: localhost
@@ -26,8 +26,8 @@
     - name: assert that idempotence test failed
       assert:
         that:
-          - docker_sandbox_test_result | failed
-          - docker_sandbox_test_result.msg | search('unchanged')
+          - docker_sandbox_idempotence_result | failed
+          - docker_sandbox_idempotence_result.msg | search('unchanged')
 
 - name: run idempotence test with failed expected result
   hosts: localhost
@@ -42,8 +42,8 @@
     - name: assert that idempotence test failed
       assert:
         that:
-          - docker_sandbox_test_result | failed
-          - docker_sandbox_test_result.msg | search('failed')
+          - docker_sandbox_idempotence_result | failed
+          - docker_sandbox_idempotence_result.msg | search('failed')
 
 - name: cleanup docker docker sandbox
   hosts: localhost
