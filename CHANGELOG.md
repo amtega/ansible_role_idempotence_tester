@@ -21,3 +21,7 @@
 
 - Renamed acion plugin.
 - Fixed bug in playbook file identification from command line args.
+
+## 2017-07-03:
+
+- Improved tests.

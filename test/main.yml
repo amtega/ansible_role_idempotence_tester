@@ -62,7 +62,7 @@
     - name: create an empty file
       copy:
         src: /etc/issue
-        dest: /tmp/
+        dest: /tmp/issue
         force: no
   tags:
     - correct_idempotence_test
@@ -80,7 +80,7 @@
     - name: create an empty file
       copy:
         src: /missingdir/missingfile
-        dest: /tmp/
+        dest: /tmp/missingfile
         force: no
   tags:
     - failed_idempotence_test
