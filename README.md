@@ -15,7 +15,7 @@ The idempotence will fail if any of the following conditions is true:
 
 ## Requirements
 
-- Ansible >= 2.0
+- Ansible >= 2.4
 
 ## Role Variables
 

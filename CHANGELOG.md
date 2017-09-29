@@ -29,3 +29,7 @@
 ## 2017-09-17
 
 - Improved tests.
+
+## 2017-09-29
+
+- Updated documentation.
