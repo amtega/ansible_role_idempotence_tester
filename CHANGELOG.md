@@ -33,3 +33,8 @@
 ## 2017-09-29
 
 - Updated documentation.
+
+## 2017-10-19
+
+- Refactored "restarted" state to "recreated" in tests.
+- Added idempotence_tester_playbook variable to select the play to use.

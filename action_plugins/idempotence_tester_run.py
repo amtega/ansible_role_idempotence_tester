@@ -9,12 +9,17 @@ class ActionModule(ActionBase):
 
     TRANSFERS_FILES = False
 
-    def get_command_line(self, inventory, group, tag="test-idempotence"):
+    def get_command_line(self,
+                         inventory,
+                         group,
+                         playbook="",
+                         tag="test-idempotence"):
         """Return command line to run idempotence tests.
 
         Args:
             inventory (str): inventory to use.
             group (str): group that contains the hosts to test.
+            playbook (str): path to the playbook to use.
             tag (str): tag to select the tests to run.
 
         Returns:
@@ -37,10 +42,13 @@ class ActionModule(ActionBase):
         skip_tags = known_args.skip_tags
         extra_args = unknown_args[1:-2]
 
-        for arg in unknown_args:
-            if re.search('.*\.yml', arg):
-                playbook = arg
-                break
+        # Extract playbook file if one is not specified
+
+        if len(playbook) == 0:
+            for arg in unknown_args:
+                if re.search('.*\.yml', arg):
+                    playbook = arg
+                    break
 
         # Build strings that will compose the final command line, adjusting
         # --tags and --skip-tags
@@ -86,7 +94,7 @@ class ActionModule(ActionBase):
 
         return full_command_line
 
-    def execute_test(self, task_vars, tmp, inventory, group, tag):
+    def execute_test(self, task_vars, tmp, inventory, group, playbook, tag):
         """Execute the test.
 
         Args:
@@ -95,6 +103,7 @@ class ActionModule(ActionBase):
             inventory (str): inventory file to use in the tests.
             group (str): group that contains the hosts to test.
             tag (str): the tag to select the tests to run.
+            playbook (str): path to the playbook file to use.
 
         Returns:
             dict: result of task execution
@@ -104,6 +113,7 @@ class ActionModule(ActionBase):
                     module_args=dict(
                         _raw_params=self.get_command_line(inventory,
                                                           group,
+                                                          playbook,
                                                           tag)),
                         task_vars=task_vars,
                         tmp=tmp)
@@ -205,6 +215,7 @@ class ActionModule(ActionBase):
 
         inventory = self._task.args.get("inventory")
         tag = self._task.args.get("tag")
+        playbook = self._task.args.get("playbook")
         group = self._task.args.get("group")
 
         runs = list()
@@ -212,7 +223,12 @@ class ActionModule(ActionBase):
 
         # Launch first run
 
-        run_result = self.execute_test(task_vars, tmp, inventory, group, tag)
+        run_result = self.execute_test(task_vars,
+                                       tmp,
+                                       inventory,
+                                       group,
+                                       playbook,
+                                       tag)
         runs.append(run_result)
         result['failed'], result['changed'], result['msg'] = \
             self.parse_result(1, run_result)
@@ -224,6 +240,7 @@ class ActionModule(ActionBase):
                                            tmp,
                                            inventory,
                                            group,
+                                           playbook,
                                            tag)
             runs.append(run_result)
             result['failed'], result['changed'], result['msg'] = \

@@ -1,26 +1,39 @@
 ---
-# Tasks for tesing role
+# Tasks for testing role
 
-- name: run idempotence test with ok expect results
+- name: run idempotence test withing this calling playbook
   hosts: localhost
   roles:
     - role: docker_presets
     - role: docker_sandbox
       docker_sandbox_state: started
-      docker_sandbox_idempotence_test_tag: correct_idempotence_test
   tasks:
     - name: assert that idempotence test was ok
       assert:
         that: not docker_sandbox_idempotence_result | failed
 
-- name: run idempotence test with no changes expected result
+- name: run idempotence test with ok results in external playbook
+  hosts: localhost
+  roles:
+    - role: docker_presets
+    - role: docker_sandbox
+      docker_sandbox_state: started
+      idempotence_tester_playbook: idempotence.yml
+      idempotence_tester_tag: correct_idempotence_test
+  tasks:
+    - name: assert that idempotence test was ok
+      assert:
+        that: not docker_sandbox_idempotence_result | failed
+
+- name: run idempotence test with no changes result in external playbook
   hosts: localhost
   tasks:
     - include_role:
         name: docker_sandbox
       vars:
-        docker_sandbox_state: restarted
-        docker_sandbox_idempotence_test_tag: no_changes_idempotence_test
+        docker_sandbox_state: recreated
+        idempotence_tester_playbook: idempotence.yml
+        idempotence_tester_tag: no_changes_idempotence_test
       ignore_errors: true
 
     - name: assert that idempotence test failed
@@ -29,14 +42,15 @@
           - docker_sandbox_idempotence_result | failed
           - docker_sandbox_idempotence_result.msg | search('unchanged')
 
-- name: run idempotence test with failed expected result
+- name: run idempotence test with failed result in external playbook
   hosts: localhost
   tasks:
     - include_role:
         name: docker_sandbox
       vars:
-        docker_sandbox_state: restarted
-        docker_sandbox_idempotence_test_tag: failed_idempotence_test
+        docker_sandbox_state: recreated
+        idempotence_tester_playbook: idempotence.yml
+        idempotence_tester_tag: failed_idempotence_test
       ignore_errors: true
 
     - name: assert that idempotence test failed
@@ -45,42 +59,22 @@
           - docker_sandbox_idempotence_result | failed
           - docker_sandbox_idempotence_result.msg | search('failed')
 
+- name: idempotence test
+  hosts: docker_sandbox_containers
+  tasks:
+    - name: create a test file
+      copy:
+        content: "Hello World"
+        dest: /tmp/othertestfile
+        force: no
+  tags:
+    - idempotence
+
 - name: cleanup docker docker sandbox
   hosts: localhost
   roles:
     - role: docker_sandbox
       docker_sandbox_state: absent
 
-- name: refresh inventory to avoid running tasks destinated to idempotence tests
-  hosts: localhost
-  tasks:
-    - meta: refresh_inventory
-
-- name: idempotence test with correct expected result
-  hosts: docker_sandbox_containers
-  tasks:
-    - name: create an empty file
-      copy:
-        content: ""
-        dest: /tmp/emptyfile
-        force: no
-  tags:
-    - correct_idempotence_test
-
-- name: idempotence test with no changes expected result
-  hosts: docker_sandbox_containers
-  tasks:
-    - debug: msg="Hello World"
-  tags:
-    - no_changes_idempotence_test
-
-- name: idempotence test with failed expected result
-  hosts: docker_sandbox_containers
-  tasks:
-    - name: create an empty file
-      copy:
-        src: /missingdir/missingfile
-        dest: /tmp/missingfile
-        force: no
   tags:
     - failed_idempotence_test

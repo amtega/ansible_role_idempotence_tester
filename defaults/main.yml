@@ -13,3 +13,8 @@ idempotence_tester_inventory:
 # specified hosts.
 
 idempotence_tester_group: all
+
+# Path to the playbook file containing the tasks to run during idempotence test
+# If empty the same calling playbook will be used
+
+idempotence_tester_playbook: ""

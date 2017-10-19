@@ -1,0 +1,31 @@
+---
+# Tasks for idempotence tests
+
+- name: idempotence test with correct expected result
+  hosts: docker_sandbox_containers
+  tasks:
+    - name: create a test file
+      copy:
+        content: "Hello World"
+        dest: /tmp/testfile
+        force: no
+  tags:
+    - correct_idempotence_test
+
+- name: idempotence test with no changes expected result
+  hosts: docker_sandbox_containers
+  tasks:
+    - debug: msg="Hello World"
+  tags:
+    - no_changes_idempotence_test
+
+- name: idempotence test with failed expected result
+  hosts: docker_sandbox_containers
+  tasks:
+    - name: create an test file
+      copy:
+        src: /missingdir/missingfile
+        dest: /tmp/missingfile
+        force: no
+  tags:
+    - failed_idempotence_test
