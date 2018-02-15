@@ -87,7 +87,7 @@ class ActionModule(ActionBase):
 
         non_empty_components = []
         for c in components:
-            if len(c) > 0:
+            if c is not None and len(c) > 0:
                 non_empty_components.append(c)
 
         full_command_line = " ".join(non_empty_components)
