@@ -15,7 +15,6 @@
 - name: run idempotence test with ok results in external playbook
   hosts: localhost
   roles:
-    - role: amtega.docker_presets
     - role: amtega.docker_sandbox
       docker_sandbox_state: started
       idempotence_tester_playbook: idempotence.yml
@@ -70,11 +69,8 @@
   tags:
     - idempotence
 
-- name: cleanup docker docker sandbox
+- name: cleanup docker sandbox
   hosts: localhost
   roles:
     - role: amtega.docker_sandbox
       docker_sandbox_state: absent
-
-  tags:
-    - failed_idempotence_test

@@ -40,15 +40,24 @@ class ActionModule(ActionBase):
         command = known_args.command[0]
         tags = known_args.tags
         skip_tags = known_args.skip_tags
-        extra_args = unknown_args[1:-2]
+        extra_args = unknown_args
 
-        # Extract playbook file if one is not specified
+        # Extract all playbooks present in extra_args
+
+        playbook_files = list()
+        for arg in extra_args:
+            if re.search('.*\.yml', arg):
+                playbook_files.append(arg)
+
+        # Setup current playbook if one is not specified
 
         if len(playbook) == 0:
-            for arg in unknown_args:
-                if re.search('.*\.yml', arg):
-                    playbook = arg
-                    break
+            playbook = playbook_files[0]
+
+        # Remove from all playbook from extra args
+
+        for p in playbook_files:
+            extra_args.remove(p)
 
         # Build strings that will compose the final command line, adjusting
         # --tags and --skip-tags
@@ -139,6 +148,13 @@ class ActionModule(ActionBase):
         Returns:
             tuple: (failed, changed, msg)
         """
+        # Initialize counters
+
+        failed_count = 0
+        unreachable_count = 0
+        changed_count = 0
+        not_changed_count = 0
+
         # Extract play recap
 
         play_recap_header = re.compile("PLAY RECAP \*+")
@@ -162,11 +178,6 @@ class ActionModule(ActionBase):
         changed_zero_line = \
             re.compile(".+changed=0.+unreachable=.+failed=.+")
 
-        failed_count = 0
-        unreachable_count = 0
-        changed_count = 0
-        not_changed_count = 0
-
         for line in play_recap:
             match = play_recap_line.match(line)
             if match:
@@ -178,6 +189,14 @@ class ActionModule(ActionBase):
                     not_changed_count += 1
                 else:
                     changed_count += 1
+
+        # Analice stderr
+
+        if len(result['stderr_lines']) > 0:
+            output = (True,
+                      False,
+                      "Run " + str(run) + " finished with error(s)")
+            return output
 
         # Analize metrics
 
