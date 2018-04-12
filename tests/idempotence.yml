@@ -22,7 +22,7 @@
 - name: idempotence test with failed expected result
   hosts: docker_sandbox_containers
   tasks:
-    - name: create an test file
+    - name: create a test file
       copy:
         src: /missingdir/missingfile
         dest: /tmp/missingfile
