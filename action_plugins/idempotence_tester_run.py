@@ -13,7 +13,8 @@ class ActionModule(ActionBase):
                          inventory,
                          group,
                          playbook="",
-                         tag="test-idempotence"):
+                         tag="test-idempotence",
+                         append=""):
         """Return command line to run idempotence tests.
 
         Args:
@@ -21,6 +22,7 @@ class ActionModule(ActionBase):
             group (str): group that contains the hosts to test.
             playbook (str): path to the playbook to use.
             tag (str): tag to select the tests to run.
+            append (str): content to append to command line.
 
         Returns:
             str: full command line to run the tests.
@@ -90,7 +92,8 @@ class ActionModule(ActionBase):
                        extra_args,
                        inventory_args,
                        limit_args,
-                       playbook ]
+                       playbook,
+                       append ]
 
         # Build the full command line
 
@@ -103,7 +106,14 @@ class ActionModule(ActionBase):
 
         return full_command_line
 
-    def execute_test(self, task_vars, tmp, inventory, group, playbook, tag):
+    def execute_test(self,
+                     task_vars,
+                     tmp,
+                     inventory,
+                     group,
+                     playbook,
+                     tag,
+                     append):
         """Execute the test.
 
         Args:
@@ -113,6 +123,7 @@ class ActionModule(ActionBase):
             group (str): group that contains the hosts to test.
             tag (str): the tag to select the tests to run.
             playbook (str): path to the playbook file to use.
+            append (str): content to append to command line.
 
         Returns:
             dict: result of task execution
@@ -120,10 +131,12 @@ class ActionModule(ActionBase):
         result = self._execute_module(
                     module_name='command',
                     module_args=dict(
+                        _uses_shell=True,
                         _raw_params=self.get_command_line(inventory,
                                                           group,
                                                           playbook,
-                                                          tag)),
+                                                          tag,
+                                                          append)),
                         task_vars=task_vars,
                         tmp=tmp)
 
@@ -236,6 +249,8 @@ class ActionModule(ActionBase):
         tag = self._task.args.get("tag")
         playbook = self._task.args.get("playbook")
         group = self._task.args.get("group")
+        append = self._task.args.get("append")
+        ignore = self._task.args.get("ignore")
 
         runs = list()
         result['changed'] = True
@@ -247,7 +262,8 @@ class ActionModule(ActionBase):
                                        inventory,
                                        group,
                                        playbook,
-                                       tag)
+                                       tag,
+                                       append)
         runs.append(run_result)
         result['failed'], result['changed'], result['msg'] = \
             self.parse_result(1, run_result)
@@ -260,7 +276,8 @@ class ActionModule(ActionBase):
                                            inventory,
                                            group,
                                            playbook,
-                                           tag)
+                                           tag,
+                                           append)
             runs.append(run_result)
             result['failed'], result['changed'], result['msg'] = \
                 self.parse_result(2, run_result)
@@ -268,5 +285,8 @@ class ActionModule(ActionBase):
 
         if not result['failed'] or self._play_context.verbosity > 0:
             result['runs'] = runs
+
+        if ignore:
+            result['failed'] = False
 
         return result

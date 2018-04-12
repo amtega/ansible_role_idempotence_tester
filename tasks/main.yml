@@ -8,9 +8,13 @@
         inventory: "{{ idempotence_tester_inventory }}"
         group: "{{ idempotence_tester_group }}"
         playbook: "{{ idempotence_tester_playbook }}"
+        append: "{{ idempotence_tester_append }}"
+        ignore: "{{ idempotence_tester_ignore }}"
       register: idempotence_tester_test_result
       tags:
         - role::idempotence_tester
         - role::idempotence_tester::test
+
+    - debug: var=idempotence_tester_test_result.msg
   rescue:
     - debug: var=idempotence_tester_test_result
