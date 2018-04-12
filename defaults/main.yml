@@ -18,3 +18,8 @@ idempotence_tester_group: all
 # If empty the same calling playbook will be used
 
 idempotence_tester_playbook: ""
+
+# Append the following variable content to the command line used to run the
+# idempotence tests
+
+idempotence_tester_append: " | tee idempotence.log"

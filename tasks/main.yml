@@ -8,6 +8,7 @@
         inventory: "{{ idempotence_tester_inventory }}"
         group: "{{ idempotence_tester_group }}"
         playbook: "{{ idempotence_tester_playbook }}"
+        append: "{{ idempotence_tester_append }}"
       register: idempotence_tester_test_result
       tags:
         - role::idempotence_tester
