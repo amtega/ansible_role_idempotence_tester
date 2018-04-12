@@ -250,6 +250,7 @@ class ActionModule(ActionBase):
         playbook = self._task.args.get("playbook")
         group = self._task.args.get("group")
         append = self._task.args.get("append")
+        ignore = self._task.args.get("ignore")
 
         runs = list()
         result['changed'] = True
@@ -284,5 +285,8 @@ class ActionModule(ActionBase):
 
         if not result['failed'] or self._play_context.verbosity > 0:
             result['runs'] = runs
+
+        if ignore:
+            result['failed'] = False
 
         return result
