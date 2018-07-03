@@ -132,16 +132,16 @@ class ActionModule(ActionBase):
             dict: result of task execution
         """
         result = self._execute_module(
-                    module_name='command',
-                    module_args=dict(
-                        _uses_shell=True,
-                        _raw_params=self.get_command_line(inventory,
-                                                          group,
-                                                          playbook,
-                                                          tag,
-                                                          append)),
-                        task_vars=task_vars,
-                        tmp=tmp)
+            module_name='command',
+            module_args=dict(
+                _uses_shell=True,
+                _raw_params=self.get_command_line(inventory,
+                                                  group,
+                                                  playbook,
+                                                  tag,
+                                                  append)),
+            task_vars=task_vars,
+            tmp=tmp)
 
         if "changed" in result:
             result.pop("changed")
