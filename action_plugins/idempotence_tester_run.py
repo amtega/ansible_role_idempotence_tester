@@ -2,8 +2,11 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-import argparse, re, sys
+import argparse
+import re
+import sys
 from ansible.plugins.action import ActionBase
+
 
 class ActionModule(ActionBase):
 
@@ -48,7 +51,7 @@ class ActionModule(ActionBase):
 
         playbook_files = list()
         for arg in extra_args:
-            if re.search('.*\.yml', arg):
+            if re.search(r'.*\.yml', arg):
                 playbook_files.append(arg)
 
         # Setup current playbook if one is not specified
@@ -84,16 +87,16 @@ class ActionModule(ActionBase):
         else:
             inventory_args = ""
 
-        limit_args = '--limit="' + group +'"'
+        limit_args = '--limit="' + group + '"'
 
-        components = [ command,
-                       tags,
-                       skip_tags,
-                       extra_args,
-                       inventory_args,
-                       limit_args,
-                       playbook,
-                       append ]
+        components = [command,
+                      tags,
+                      skip_tags,
+                      extra_args,
+                      inventory_args,
+                      limit_args,
+                      playbook,
+                      append]
 
         # Build the full command line
 
@@ -170,7 +173,7 @@ class ActionModule(ActionBase):
 
         # Extract play recap
 
-        play_recap_header = re.compile("PLAY RECAP \*+")
+        play_recap_header = re.compile(r"PLAY RECAP \*+")
         stdout = result['stdout_lines']
         header_position = -1
         i = 0
@@ -232,8 +235,8 @@ class ActionModule(ActionBase):
 
         if failed_count > 0:
             output = (True,
-                    (changed_count > 1),
-                    "Run " + str(run) + " finished with failed hosts")
+                      (changed_count > 1),
+                      "Run " + str(run) + " finished with failed hosts")
 
         return output
 
