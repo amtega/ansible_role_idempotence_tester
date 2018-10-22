@@ -1,6 +1,7 @@
 ---
 
 galaxy_info:
+  role_name: idempotence_tester
   author: Juan Antonio Valiño García
   description: Run idempotence tests
   company: AMTEGA - Xunta de Galicia
