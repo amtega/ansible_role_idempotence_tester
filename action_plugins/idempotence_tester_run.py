@@ -15,6 +15,7 @@ class ActionModule(ActionBase):
     def get_command_line(self,
                          inventory,
                          group,
+                         command="",
                          playbook="",
                          tag="test-idempotence",
                          append=""):
@@ -23,6 +24,7 @@ class ActionModule(ActionBase):
         Args:
             inventory (str): inventory to use.
             group (str): group that contains the hosts to test.
+            command (str): command to use
             playbook (str): path to the playbook to use.
             tag (str): tag to select the tests to run.
             append (str): content to append to command line.
@@ -42,15 +44,18 @@ class ActionModule(ActionBase):
         # Parse argv and extract specific arguments
 
         known_args, unknown_args = parser.parse_known_args(sys.argv)
-        command = known_args.command[0]
-        tags = known_args.tags
-        skip_tags = known_args.skip_tags
-        extra_args = unknown_args
+        command_arg = known_args.command[0]
+        tags_arg = known_args.tags
+        skip_tags_arg = known_args.skip_tags
+        extra_args_arg = unknown_args
+
+        if len(command) == 0:
+            command = command_arg
 
         # Extract all playbooks present in extra_args
 
         playbook_files = list()
-        for arg in extra_args:
+        for arg in extra_args_arg:
             if re.search(r'.*\.yml', arg):
                 playbook_files.append(arg)
 
@@ -59,26 +64,28 @@ class ActionModule(ActionBase):
         if len(playbook) == 0:
             playbook = playbook_files[0]
 
-        # Remove from all playbook from extra args
+        # Remove all playbook from extra args
 
         for p in playbook_files:
-            extra_args.remove(p)
+            extra_args_arg.remove(p)
 
         # Build strings that will compose the final command line, adjusting
         # --tags and --skip-tags
 
-        if skip_tags is not None:
+        if skip_tags_arg is not None:
             skip_tags = "--skip-tags " \
-                        + skip_tags.replace("," + tag, "")
+                        + skip_tags_arg.replace("," + tag, "")
             skip_tags = skip_tags.replace(tag + ",", "")
+        else:
+            skip_tags = []
 
-        if tags is None:
+        if tags_arg is None:
             tags = "--tags " + tag
         else:
-            tags = tags + "," + tag
+            tags = tags_arg + "," + tag
 
-        if len(extra_args) > 0:
-            extra_args = " ".join(extra_args)
+        if len(extra_args_arg) > 0:
+            extra_args = " ".join(extra_args_arg)
         else:
             extra_args = ""
 
@@ -114,6 +121,7 @@ class ActionModule(ActionBase):
                      tmp,
                      inventory,
                      group,
+                     command,
                      playbook,
                      tag,
                      append):
@@ -124,6 +132,7 @@ class ActionModule(ActionBase):
             tmp (str): temporary directory.
             inventory (str): inventory file to use in the tests.
             group (str): group that contains the hosts to test.
+            command (str): command to use.
             tag (str): the tag to select the tests to run.
             playbook (str): path to the playbook file to use.
             append (str): content to append to command line.
@@ -137,6 +146,7 @@ class ActionModule(ActionBase):
                 _uses_shell=True,
                 _raw_params=self.get_command_line(inventory,
                                                   group,
+                                                  command,
                                                   playbook,
                                                   tag,
                                                   append)),
@@ -252,6 +262,7 @@ class ActionModule(ActionBase):
         tag = self._task.args.get("tag")
         playbook = self._task.args.get("playbook")
         group = self._task.args.get("group")
+        command = self._task.args.get("command")
         append = self._task.args.get("append")
         ignore = self._task.args.get("ignore")
 
@@ -264,6 +275,7 @@ class ActionModule(ActionBase):
                                        tmp,
                                        inventory,
                                        group,
+                                       command,
                                        playbook,
                                        tag,
                                        append)
@@ -278,6 +290,7 @@ class ActionModule(ActionBase):
                                            tmp,
                                            inventory,
                                            group,
+                                           command,
                                            playbook,
                                            tag,
                                            append)
