@@ -14,6 +14,11 @@ idempotence_tester_inventory:
 
 idempotence_tester_group: all
 
+# Path to the `ansible-playbook` binary to use during idempotence test.
+# If empty the same calling binary will be used
+
+idempotence_tester_command: ""
+
 # Path to the playbook file containing the tasks to run during idempotence test
 # If empty the same calling playbook will be used
 

@@ -2,11 +2,12 @@
 # Role tasks
 
 - block:
-    - name: run idempotence test
+    - name: Run idempotence test
       idempotence_tester_run:
         tag: "{{ idempotence_tester_tag }}"
         inventory: "{{ idempotence_tester_inventory }}"
         group: "{{ idempotence_tester_group }}"
+        command: "{{ idempotence_tester_command }}"
         playbook: "{{ idempotence_tester_playbook }}"
         append: "{{ idempotence_tester_append }}"
         ignore: "{{ idempotence_tester_ignore }}"

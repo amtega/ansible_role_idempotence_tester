@@ -13,10 +13,6 @@ The idempotence will fail if any of the following conditions is true:
 - Any of the runs ends with failed tasks.
 - Any of the runs ends with unreachable hosts.
 
-## Requirements
-
-[Ansible 2.5+](http://docs.ansible.com/ansible/latest/intro_installation.html)
-
 ## Role Variables
 
 A list of all the default variables for this role is available in `defaults/main.yml`.
@@ -24,10 +20,6 @@ A list of all the default variables for this role is available in `defaults/main
 Also, the role setup the following variables during execution:
 
 - idempotence_tester_test_result: contains the result of the idempotence tests.
-
-## Dependencies
-
-N/A
 
 ## Example Playbook
 
@@ -61,7 +53,7 @@ $ ansible-playbook main.yml
 
 ## License
 
-Copyright (C) 2017 AMTEGA - Xunta de Galicia
+Copyright (C) 2019 AMTEGA - Xunta de Galicia
 
 This role is free software: you can redistribute it and/or modify
 it under the terms of:
