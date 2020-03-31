@@ -16,7 +16,7 @@
         - role::idempotence_tester
         - role::idempotence_tester::test
 
-    - name: show idempotence test result
+    - name: Show idempotence test result
       debug: var=idempotence_tester_test_result.msg
       when: idempotence_tester_test_result.msg | length > 0
   rescue:
