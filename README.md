@@ -27,13 +27,11 @@ This is an example playbook:
 
 ```yaml
 ---
-- name: launch idempotence test
-  hosts: localhost
+- hosts: localhost
   roles:
     - role: amtega.idempotence_tester
 
-- name: idempotence test
-  host: localhost
+- host: localhost
   tasks:
     - debug: msg="Nothing done, so idempotence test should fail"
   tags:

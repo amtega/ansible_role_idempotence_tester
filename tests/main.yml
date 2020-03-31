@@ -73,7 +73,7 @@
         idempotence_tester_ignore: true
       ignore_errors: true
 
-    - name: assert that idempotence test failed
+    - name: Assert that idempotence test failed
       assert:
         that:
           - docker_sandbox_idempotence_result.msg is search('failed')
